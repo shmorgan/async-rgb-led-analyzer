@@ -1,20 +1,20 @@
-#ifndef ASYNCRGBLED_ANALYZER_H
-#define ASYNCRGBLED_ANALYZER_H
+#ifndef S4LED_ANALYZER_H
+#define S4LED_ANALYZER_H
 
 #include <Analyzer.h>
 
-#include "AsyncRgbLedSimulationDataGenerator.h"
-#include "AsyncRgbLedHelpers.h"
+#include "S4LedSimulationDataGenerator.h"
+#include "S4LedHelpers.h"
 
 // forward decls
-class AsyncRgbLedAnalyzerSettings;
-class AsyncRgbLedAnalyzerResults;
+class S4LedAnalyzerSettings;
+class S4LedAnalyzerResults;
 
-class AsyncRgbLedAnalyzer : public Analyzer2
+class S4LedAnalyzer : public Analyzer2
 {
   public:
-    AsyncRgbLedAnalyzer();
-    virtual ~AsyncRgbLedAnalyzer();
+    S4LedAnalyzer();
+    virtual ~S4LedAnalyzer();
 
     void SetupResults() override;
     void WorkerThread() override;
@@ -26,11 +26,11 @@ class AsyncRgbLedAnalyzer : public Analyzer2
     bool NeedsRerun() override;
 
   protected: // vars
-    std::unique_ptr<AsyncRgbLedAnalyzerSettings> mSettings;
-    std::unique_ptr<AsyncRgbLedAnalyzerResults> mResults;
+    std::unique_ptr<S4LedAnalyzerSettings> mSettings;
+    std::unique_ptr<S4LedAnalyzerResults> mResults;
     AnalyzerChannelData* mChannelData = nullptr;
 
-    AsyncRgbLedSimulationDataGenerator mSimulationDataGenerator;
+    S4LedSimulationDataGenerator mSimulationDataGenerator;
     bool mSimulationInitialized = false;
 
     // analysis vars:
@@ -44,6 +44,15 @@ class AsyncRgbLedAnalyzer : public Analyzer2
     bool mDidDetectHighSpeed = false;
 
   private:
+    struct AddressResult
+    {
+        bool mValid = false;
+        bool mIsReset = false;
+        U8 mAddress;
+        U64 mValueBeginSample = 0;
+        U64 mValueEndSample = 0;
+    };
+
     struct RGBResult
     {
         bool mValid = false;
@@ -54,6 +63,7 @@ class AsyncRgbLedAnalyzer : public Analyzer2
     };
 
     RGBResult ReadRGBTriple();
+    AddressResult ReadPixelAddress();
 
     struct ReadResult
     {
@@ -77,4 +87,4 @@ extern "C"
     ANALYZER_EXPORT void __cdecl DestroyAnalyzer( Analyzer* analyzer );
 }
 
-#endif // ASYNCRGBLED_ANALYZER_H
+#endif // S4LED_ANALYZER_H

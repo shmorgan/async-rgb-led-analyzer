@@ -1,22 +1,22 @@
-#include "AsyncRgbLedSimulationDataGenerator.h"
+#include "S4LedSimulationDataGenerator.h"
 
 #include <cmath> // for M_PI, cos
 #include <iostream>
 #include <cassert>
 
-#include "AsyncRgbLedAnalyzerSettings.h"
+#include "S4LedAnalyzerSettings.h"
 
 #include <AnalyzerHelpers.h>
 
-AsyncRgbLedSimulationDataGenerator::AsyncRgbLedSimulationDataGenerator()
+S4LedSimulationDataGenerator::S4LedSimulationDataGenerator()
 {
 }
 
-AsyncRgbLedSimulationDataGenerator::~AsyncRgbLedSimulationDataGenerator()
+S4LedSimulationDataGenerator::~S4LedSimulationDataGenerator()
 {
 }
 
-void AsyncRgbLedSimulationDataGenerator::Initialize( U32 simulation_sample_rate, AsyncRgbLedAnalyzerSettings* settings )
+void S4LedSimulationDataGenerator::Initialize( U32 simulation_sample_rate, S4LedAnalyzerSettings* settings )
 {
     // Initialize the random number generator with a literal seed to obtain repeatability
     // Change this for srand(time(NULL)) for "truly" random sequences
@@ -50,7 +50,7 @@ void AsyncRgbLedSimulationDataGenerator::Initialize( U32 simulation_sample_rate,
     }
 }
 
-U32 AsyncRgbLedSimulationDataGenerator::GenerateSimulationData( U64 largest_sample_requested, U32 sample_rate,
+U32 S4LedSimulationDataGenerator::GenerateSimulationData( U64 largest_sample_requested, U32 sample_rate,
                                                                 SimulationChannelDescriptor** simulation_channel )
 {
     U64 adjusted_largest_sample_requested =
@@ -81,13 +81,13 @@ U32 AsyncRgbLedSimulationDataGenerator::GenerateSimulationData( U64 largest_samp
     return 1;
 }
 
-void AsyncRgbLedSimulationDataGenerator::CreateRGBWord()
+void S4LedSimulationDataGenerator::CreateRGBWord()
 {
     const RGBValue rgb = RandomRGBValue();
     WriteRGBTriple( rgb );
 }
 
-void AsyncRgbLedSimulationDataGenerator::WriteRGBTriple( const RGBValue& rgb )
+void S4LedSimulationDataGenerator::WriteRGBTriple( const RGBValue& rgb )
 {
     U16 values[ 3 ];
     rgb.ConvertToControllerOrder( mSettings->GetColorLayout(), values );
@@ -98,7 +98,7 @@ void AsyncRgbLedSimulationDataGenerator::WriteRGBTriple( const RGBValue& rgb )
     }
 }
 
-void AsyncRgbLedSimulationDataGenerator::WriteReset()
+void S4LedSimulationDataGenerator::WriteReset()
 {
     assert( mLEDSimulationData.GetCurrentBitState() == BIT_LOW );
     const double resetSec = mClockGenerator.AdvanceByTimeS( mSettings->ResetTiming().mNominalSec );
@@ -106,7 +106,7 @@ void AsyncRgbLedSimulationDataGenerator::WriteReset()
     // and stay low
 }
 
-void AsyncRgbLedSimulationDataGenerator::WriteUIntData( U16 data, U8 bit_count )
+void S4LedSimulationDataGenerator::WriteUIntData( U16 data, U8 bit_count )
 {
     BitExtractor extractor( data, AnalyzerEnums::MsbFirst, bit_count );
 
@@ -116,7 +116,7 @@ void AsyncRgbLedSimulationDataGenerator::WriteUIntData( U16 data, U8 bit_count )
     }
 }
 
-void AsyncRgbLedSimulationDataGenerator::WriteBit( bool b )
+void S4LedSimulationDataGenerator::WriteBit( bool b )
 {
     assert( mLEDSimulationData.GetCurrentBitState() == BIT_LOW );
 
@@ -132,7 +132,7 @@ void AsyncRgbLedSimulationDataGenerator::WriteBit( bool b )
     mLEDSimulationData.Advance( lowSamples );
 }
 
-RGBValue AsyncRgbLedSimulationDataGenerator::RandomRGBValue() const
+RGBValue S4LedSimulationDataGenerator::RandomRGBValue() const
 {
     const U16 red = rand() % mMaximumChannelValue;
     const U16 green = rand() % mMaximumChannelValue;

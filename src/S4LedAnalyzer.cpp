@@ -1,31 +1,32 @@
-#include "AsyncRgbLedAnalyzer.h"
-#include "AsyncRgbLedAnalyzerSettings.h"
-#include "AsyncRgbLedAnalyzerResults.h"
+#include "S4LedAnalyzer.h"
+#include "S4LedAnalyzerSettings.h"
+#include "S4LedAnalyzerResults.h"
 
 #include <AnalyzerChannelData.h>
 
 #include <iostream>
 #include <algorithm> // for std::max/max()
 
-AsyncRgbLedAnalyzer::AsyncRgbLedAnalyzer() : Analyzer2(), mSettings( new AsyncRgbLedAnalyzerSettings )
+S4LedAnalyzer::S4LedAnalyzer() : Analyzer2(), mSettings( new S4LedAnalyzerSettings )
 {
+	std::cerr << "Create LED Analyzer!!" << std::endl;
     SetAnalyzerSettings( mSettings.get() );
     UseFrameV2();
 }
 
-AsyncRgbLedAnalyzer::~AsyncRgbLedAnalyzer()
+S4LedAnalyzer::~S4LedAnalyzer()
 {
     KillThread();
 }
 
-void AsyncRgbLedAnalyzer::SetupResults()
+void S4LedAnalyzer::SetupResults()
 {
-    mResults.reset( new AsyncRgbLedAnalyzerResults( this, mSettings.get() ) );
+    mResults.reset( new S4LedAnalyzerResults( this, mSettings.get() ) );
     SetAnalyzerResults( mResults.get() );
     mResults->AddChannelBubblesWillAppearOn( mSettings->mInputChannel );
 }
 
-void AsyncRgbLedAnalyzer::WorkerThread()
+void S4LedAnalyzer::WorkerThread()
 {
     mSampleRateHz = GetSampleRate();
     mChannelData = GetAnalyzerChannelData( mSettings->mInputChannel );
@@ -43,6 +44,8 @@ void AsyncRgbLedAnalyzer::WorkerThread()
     }
 
     bool isResyncNeeded = true;
+	
+	std::cerr << "Setup Results!!" << std::endl;
 
     for( ;; )
     {
@@ -97,36 +100,102 @@ void AsyncRgbLedAnalyzer::WorkerThread()
     }
 }
 
-void AsyncRgbLedAnalyzer::SynchronizeToReset()
+void S4LedAnalyzer::SynchronizeToReset()
 {
-    if( mChannelData->GetBitState() == BIT_HIGH )
+
+    U64  CurrentSampleNumber = mChannelData->GetSampleNumber();
+    bool BitState            = mChannelData->GetBitState();
+
+    // If CurrentSampleNUmber is zero, we are at the beginning of the sample
+    // Check to see if we are at a high state, if so lets skip that incase is's
+    // a false Reset.
+    if( mChannelData->GetBitState() == BIT_HIGH && CurrentSampleNumber == 0 )
     {
+        mChannelData->AdvanceToNextEdge();
         mChannelData->AdvanceToNextEdge();
     }
 
     for( ;; )
     {
-        const U64 lowTransition = mChannelData->GetSampleNumber();
-        const U64 highTransition = mChannelData->GetSampleOfNextEdge();
-        double lowTimeSec = ( highTransition - lowTransition ) / mSampleRateHz;
+        CurrentSampleNumber = mChannelData->GetSampleNumber();
+        BitState            = mChannelData->GetBitState();
 
-        if( lowTimeSec > mSettings->ResetTiming().mMinimumSec )
+        if( CurrentSampleNumber == 0 )
+        {
+            mChannelData->AdvanceToNextEdge();
+            CurrentSampleNumber = mChannelData->GetSampleNumber();
+        }
+
+        const U64 NextSampleNumber     = mChannelData->GetSampleOfNextEdge();
+        const U64 SampleDiff           = NextSampleNumber - CurrentSampleNumber;
+        double highTimeSec             = ( NextSampleNumber - CurrentSampleNumber ) / mSampleRateHz;
+        const double MinSecElapsed     = mSettings->ResetTiming().mMinimumSec;
+
+        if( highTimeSec > mSettings->ResetTiming().mMinimumSec )
         {
             // it's a reset, we are done
             // advance to the end of the reset, ready for the first
             // ReadRGB / ReadBit
-            mChannelData->AdvanceToAbsPosition( highTransition );
+            mChannelData->AdvanceToAbsPosition( NextSampleNumber );
             return;
         }
 
         // advance past the rising edge, to the next falling edge,
         // which is our next candidate for the beginning of a RESET
-        mChannelData->AdvanceToAbsPosition( highTransition );
+        mChannelData->AdvanceToAbsPosition( NextSampleNumber );
         mChannelData->AdvanceToNextEdge();
     }
 }
 
-auto AsyncRgbLedAnalyzer::ReadRGBTriple() -> RGBResult
+auto S4LedAnalyzer::ReadPixelAddress() -> AddressResult
+{
+
+    //const U8 bitSize = mSettings->BitSize();
+    U64 address = 0;
+    AddressResult result;
+
+    DataBuilder builder;
+    int bitSize = 8;
+    U64 value = 0;
+
+    builder.Reset( &value, AnalyzerEnums::MsbFirst, bitSize );
+    int i = 0;
+
+    for( ; i < bitSize; ++i )
+    {
+        auto bitResult = ReadBit();
+
+        if( !bitResult.mValid )
+        {
+            break;
+        }
+
+        // for the first bit of channel 0, record the beginning time
+        // for accurate frame positions in the results
+        if( ( i == 0 ) )
+        {
+            result.mValueBeginSample = bitResult.mBeginSample;
+        }
+
+        result.mValueEndSample = bitResult.mEndSample;
+        builder.AddBit( bitResult.mBitValue );
+        result.mIsReset = bitResult.mIsReset;
+    }
+
+    if( i == bitSize )
+    {
+        // we saw a complete channel, save it
+        address = value;
+    }
+    else
+    {
+        // partial data due to reset or invalid timing, discard
+        return result;
+    }
+}
+
+
+auto S4LedAnalyzer::ReadRGBTriple() -> RGBResult
 {
     const U8 bitSize = mSettings->BitSize();
     U16 channels[ 3 ] = { 0, 0, 0 };
@@ -184,7 +253,7 @@ auto AsyncRgbLedAnalyzer::ReadRGBTriple() -> RGBResult
     return result;
 }
 
-auto AsyncRgbLedAnalyzer::ReadBit() -> ReadResult
+auto S4LedAnalyzer::ReadBit() -> ReadResult
 {
     ReadResult result;
     result.mValid = false;
@@ -302,7 +371,7 @@ auto AsyncRgbLedAnalyzer::ReadBit() -> ReadResult
     return result;
 }
 
-bool AsyncRgbLedAnalyzer::DetectSpeedMode( double positiveTimeSec, double negativeTimeSec, BitState& value )
+bool S4LedAnalyzer::DetectSpeedMode( double positiveTimeSec, double negativeTimeSec, BitState& value )
 {
     mDidDetectHighSpeed = false;
 
@@ -336,12 +405,12 @@ bool AsyncRgbLedAnalyzer::DetectSpeedMode( double positiveTimeSec, double negati
     return false;
 }
 
-bool AsyncRgbLedAnalyzer::NeedsRerun()
+bool S4LedAnalyzer::NeedsRerun()
 {
     return false;
 }
 
-U32 AsyncRgbLedAnalyzer::GenerateSimulationData( U64 minimum_sample_index, U32 device_sample_rate,
+U32 S4LedAnalyzer::GenerateSimulationData( U64 minimum_sample_index, U32 device_sample_rate,
                                                  SimulationChannelDescriptor** simulation_channels )
 {
     if( mSimulationInitialized == false )
@@ -353,24 +422,24 @@ U32 AsyncRgbLedAnalyzer::GenerateSimulationData( U64 minimum_sample_index, U32 d
     return mSimulationDataGenerator.GenerateSimulationData( minimum_sample_index, device_sample_rate, simulation_channels );
 }
 
-U32 AsyncRgbLedAnalyzer::GetMinimumSampleRateHz()
+U32 S4LedAnalyzer::GetMinimumSampleRateHz()
 {
     return 12 * 100000; // 12Mhz minimum sample rate
 }
 
-const char* AsyncRgbLedAnalyzer::GetAnalyzerName() const
+const char* S4LedAnalyzer::GetAnalyzerName() const
 {
-    return "Addressable LEDs (Async)";
+    return "S4 Addressable LEDs (Async)";
 }
 
 const char* GetAnalyzerName()
 {
-    return "Addressable LEDs (Async)";
+    return "S4 Addressable LEDs (Async)";
 }
 
 Analyzer* CreateAnalyzer()
 {
-    return new AsyncRgbLedAnalyzer;
+    return new S4LedAnalyzer;
 }
 
 void DestroyAnalyzer( Analyzer* analyzer )

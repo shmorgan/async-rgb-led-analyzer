@@ -1,5 +1,5 @@
-#ifndef ASYNCRGBLED_ANALYZER_HELPERS
-#define ASYNCRGBLED_ANALYZER_HELPERS
+#ifndef S4LED_ANALYZER_HELPERS
+#define S4LED_ANALYZER_HELPERS
 
 #include <AnalyzerTypes.h>
 
@@ -75,4 +75,4 @@ struct BitTiming
     bool WithinTolerance( const double positiveTime, const double negativeTime ) const;
 };
 
-#endif // of #define ASYNCRGBLED_ANALYZER_SETTINGS
+#endif // of #define S4LED_ANALYZER_SETTINGS

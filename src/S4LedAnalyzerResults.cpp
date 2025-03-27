@@ -1,20 +1,20 @@
-#include "AsyncRgbLedAnalyzerResults.h"
+#include "S4LedAnalyzerResults.h"
 #include <AnalyzerHelpers.h>
-#include "AsyncRgbLedAnalyzer.h"
-#include "AsyncRgbLedAnalyzerSettings.h"
+#include "S4LedAnalyzer.h"
+#include "S4LedAnalyzerSettings.h"
 #include <iostream>
 #include <fstream>
 
-AsyncRgbLedAnalyzerResults::AsyncRgbLedAnalyzerResults( AsyncRgbLedAnalyzer* analyzer, AsyncRgbLedAnalyzerSettings* settings )
+S4LedAnalyzerResults::S4LedAnalyzerResults( S4LedAnalyzer* analyzer, S4LedAnalyzerSettings* settings )
     : AnalyzerResults(), mSettings( settings ), mAnalyzer( analyzer )
 {
 }
 
-AsyncRgbLedAnalyzerResults::~AsyncRgbLedAnalyzerResults()
+S4LedAnalyzerResults::~S4LedAnalyzerResults()
 {
 }
 
-void AsyncRgbLedAnalyzerResults::GenerateRGBStrings( const RGBValue& rgb, DisplayBase base, size_t bufSize, char* redBuf, char* greenBuff,
+void S4LedAnalyzerResults::GenerateRGBStrings( const RGBValue& rgb, DisplayBase base, size_t bufSize, char* redBuf, char* greenBuff,
                                                      char* blueBuf )
 {
     // generate a numerical representation of each color channel,
@@ -24,7 +24,7 @@ void AsyncRgbLedAnalyzerResults::GenerateRGBStrings( const RGBValue& rgb, Displa
     AnalyzerHelpers::GetNumberString( rgb.blue, base, mSettings->BitSize(), blueBuf, bufSize );
 }
 
-void AsyncRgbLedAnalyzerResults::GenerateBubbleText( U64 frame_index, Channel& channel, DisplayBase display_base )
+void S4LedAnalyzerResults::GenerateBubbleText( U64 frame_index, Channel& channel, DisplayBase display_base )
 {
     ClearResultStrings();
     Frame frame = GetFrame( frame_index );
@@ -63,7 +63,7 @@ void AsyncRgbLedAnalyzerResults::GenerateBubbleText( U64 frame_index, Channel& c
     AddResultString( webBuf );
 }
 
-void AsyncRgbLedAnalyzerResults::GenerateExportFile( const char* file, DisplayBase display_base, U32 export_type_user_id )
+void S4LedAnalyzerResults::GenerateExportFile( const char* file, DisplayBase display_base, U32 export_type_user_id )
 {
     std::ofstream file_stream( file, std::ios::out );
 
@@ -113,7 +113,7 @@ void AsyncRgbLedAnalyzerResults::GenerateExportFile( const char* file, DisplayBa
     file_stream.close();
 }
 
-void AsyncRgbLedAnalyzerResults::GenerateFrameTabularText( U64 frame_index, DisplayBase display_base )
+void S4LedAnalyzerResults::GenerateFrameTabularText( U64 frame_index, DisplayBase display_base )
 {
 #ifdef SUPPORTS_PROTOCOL_SEARCH
     Frame frame = GetFrame( frame_index );
@@ -134,12 +134,12 @@ void AsyncRgbLedAnalyzerResults::GenerateFrameTabularText( U64 frame_index, Disp
 #endif
 }
 
-void AsyncRgbLedAnalyzerResults::GeneratePacketTabularText( U64 packet_id, DisplayBase display_base )
+void S4LedAnalyzerResults::GeneratePacketTabularText( U64 packet_id, DisplayBase display_base )
 {
     // not supported
 }
 
-void AsyncRgbLedAnalyzerResults::GenerateTransactionTabularText( U64 transaction_id, DisplayBase display_base )
+void S4LedAnalyzerResults::GenerateTransactionTabularText( U64 transaction_id, DisplayBase display_base )
 {
     // not supported
 }

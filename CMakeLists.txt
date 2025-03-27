@@ -1,5 +1,5 @@
 cmake_minimum_required (VERSION 3.11)
-project(async_rgb_led_analyzer)
+project(S4_Led_Analyzer)
 
 add_definitions( -DLOGIC2 )
 
@@ -14,16 +14,16 @@ set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 include(ExternalAnalyzerSDK)
 
 set(SOURCES 
-src/AsyncRgbLedAnalyzer.cpp
-src/AsyncRgbLedAnalyzer.h
-src/AsyncRgbLedAnalyzerResults.cpp
-src/AsyncRgbLedAnalyzerResults.h
-src/AsyncRgbLedAnalyzerSettings.cpp
-src/AsyncRgbLedAnalyzerSettings.h
-src/AsyncRgbLedHelpers.cpp
-src/AsyncRgbLedHelpers.h
-src/AsyncRgbLedSimulationDataGenerator.cpp
-src/AsyncRgbLedSimulationDataGenerator.h
+src/S4LedAnalyzer.cpp
+src/S4LedAnalyzer.h
+src/S4LedAnalyzerResults.cpp
+src/S4LedAnalyzerResults.h
+src/S4LedAnalyzerSettings.cpp
+src/S4LedAnalyzerSettings.h
+src/S4LedHelpers.cpp
+src/S4LedHelpers.h
+src/S4LedSimulationDataGenerator.cpp
+src/S4LedSimulationDataGenerator.h
 )
 
-add_analyzer_plugin(async_rgb_led_analyzer SOURCES ${SOURCES})
+add_analyzer_plugin(S4_Led_Analyzer SOURCES ${SOURCES})

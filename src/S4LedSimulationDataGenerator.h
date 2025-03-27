@@ -1,24 +1,24 @@
-#ifndef ASYNCRGBLED_SIMULATION_DATA_GENERATOR
-#define ASYNCRGBLED_SIMULATION_DATA_GENERATOR
+#ifndef S4LED_SIMULATION_DATA_GENERATOR
+#define S4LED_SIMULATION_DATA_GENERATOR
 
 #include <SimulationChannelDescriptor.h>
 #include <AnalyzerHelpers.h>
-#include "AsyncRgbLedHelpers.h"
+#include "S4LedHelpers.h"
 #include <string>
 
-class AsyncRgbLedAnalyzerSettings;
+class S4LedAnalyzerSettings;
 
-class AsyncRgbLedSimulationDataGenerator
+class S4LedSimulationDataGenerator
 {
   public:
-    AsyncRgbLedSimulationDataGenerator();
-    ~AsyncRgbLedSimulationDataGenerator();
+    S4LedSimulationDataGenerator();
+    ~S4LedSimulationDataGenerator();
 
-    void Initialize( U32 simulation_sample_rate, AsyncRgbLedAnalyzerSettings* settings );
+    void Initialize( U32 simulation_sample_rate, S4LedAnalyzerSettings* settings );
     U32 GenerateSimulationData( U64 newest_sample_requested, U32 sample_rate, SimulationChannelDescriptor** simulation_channel );
 
   protected:
-    AsyncRgbLedAnalyzerSettings* mSettings;
+    S4LedAnalyzerSettings* mSettings;
     U32 mSimulationSampleRateHz;
 
   protected:
@@ -46,4 +46,4 @@ class AsyncRgbLedSimulationDataGenerator
     bool mDoGenerateHighSpeedMode = false;
     bool mHighSpeedMode = false;
 };
-#endif // ASYNCRGBLED_SIMULATION_DATA_GENERATOR
+#endif // S4LED_SIMULATION_DATA_GENERATOR

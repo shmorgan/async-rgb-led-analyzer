@@ -1,24 +1,24 @@
-#ifndef ASYNCRGBLED_ANALYZER_SETTINGS
-#define ASYNCRGBLED_ANALYZER_SETTINGS
+#ifndef S4LED_ANALYZER_SETTINGS
+#define S4LED_ANALYZER_SETTINGS
 
 #include <vector>
 
 #include <AnalyzerSettings.h>
 #include <AnalyzerTypes.h>
 
-#include "AsyncRgbLedHelpers.h"
+#include "S4LedHelpers.h"
 
-class AsyncRgbLedAnalyzerSettings : public AnalyzerSettings
+class S4LedAnalyzerSettings : public AnalyzerSettings
 {
   public:
-    AsyncRgbLedAnalyzerSettings();
-    virtual ~AsyncRgbLedAnalyzerSettings();
+    S4LedAnalyzerSettings();
+    virtual ~S4LedAnalyzerSettings();
 
     // delete all the copy/move operators for rule-of-5 compliance
-    AsyncRgbLedAnalyzerSettings( const AsyncRgbLedAnalyzerSettings& ) = delete;
-    AsyncRgbLedAnalyzerSettings( AsyncRgbLedAnalyzerSettings&& ) = delete;
-    const AsyncRgbLedAnalyzerSettings& operator=( const AsyncRgbLedAnalyzerSettings& ) = delete;
-    AsyncRgbLedAnalyzerSettings& operator=( AsyncRgbLedAnalyzerSettings&& ) = delete;
+    S4LedAnalyzerSettings( const S4LedAnalyzerSettings& ) = delete;
+    S4LedAnalyzerSettings( S4LedAnalyzerSettings&& ) = delete;
+    const S4LedAnalyzerSettings& operator=( const S4LedAnalyzerSettings& ) = delete;
+    S4LedAnalyzerSettings& operator=( S4LedAnalyzerSettings&& ) = delete;
 
 
     bool SetSettingsFromInterfaces() override;
@@ -28,17 +28,10 @@ class AsyncRgbLedAnalyzerSettings : public AnalyzerSettings
 
     enum Controller
     {
-        LED_WS2811 = 0,
-        LED_WS2812B,
-        LED_WS2813,
-        LED_TM1809,
-        LED_TM1804,
-        LED_UCS1903,
-        LED_LPD1886_8bit,
-        LED_LPD1886_12bit
+		LED_P9864B = 0
     };
 
-    Controller mLEDController = LED_WS2811;
+    Controller mLEDController = LED_P9864B;
     Channel mInputChannel = UNDEFINED_CHANNEL;
 
     /// bits ber LED channel, either 8 or 12 at present
@@ -82,4 +75,4 @@ class AsyncRgbLedAnalyzerSettings : public AnalyzerSettings
     std::vector<LedControllerData> mControllers;
 };
 
-#endif // ASYNCRGBLED_ANALYZER_SETTINGS
+#endif // S4LED_ANALYZER_SETTINGS
